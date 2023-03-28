@@ -11,7 +11,7 @@ def cloneGitRepo(String version) {
 def pushChart(String chartPath, String helmParams) {
     withCredentials([usernamePassword(credentialsId: 'HELM_ADMIN_CREDS', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
         sh """
-            echo "helm cm-push ${helmParams} ${chartPath} https://helm.test.wso2.com -u \${USERNAME} -p \${PASSWORD}"
+            echo "helm cm-push ${helmParams} ${chartPath} https://helm.wso2..test.com -u \${USERNAME} -p \${PASSWORD}"
         """
     }
 }
@@ -21,12 +21,14 @@ pipeline {
 
     parameters {
         string(name: 'GITHUB_RELEASE_VERSION', description: 'Enter the GitHub release tag', defaultValue: 'v4.2.0.1')
+        separator('Select the charts to be pushed')
         booleanParam(name: 'AM_PATTERN_1', description: 'Select if am-pattern-1 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_2', description: 'Select if am-pattern-2 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_3', description: 'Select if am-pattern-3 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_4', description: 'Select if am-pattern-4 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'SINGLE_NODE', description: 'Select if am-single-node chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'MYSQL_AM', description: 'Select if mysql-am chart needs to be pushed', defaultValue: false)
+        separator('Select Helm parameters')
         booleanParam(name: 'FORCE_PUSH', description: 'Select if charts need to be replaced', defaultValue: false)
     }
 
@@ -50,9 +52,9 @@ pipeline {
                         'MYSQL_AM': 'advanced/mysql-am'                
                     ]
 
-                    patterns.each { pattern, chart ->
-                        if (params[pattern]) {
-                            pushChart(chart, helmParams)
+                    patterns.each { chart, path ->
+                        if (params[chart]) {
+                            pushChart(path, helmParams)
                         }
                     }
                 }
