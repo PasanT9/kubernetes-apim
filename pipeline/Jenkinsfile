@@ -21,14 +21,14 @@ pipeline {
 
     parameters {
         string(name: 'GITHUB_RELEASE_VERSION', description: 'Enter the GitHub release tag', defaultValue: 'v4.2.0.1')
-        separator('Select the charts to be pushed')
+        separator('Select charts to be pushed', name: 'charts')
         booleanParam(name: 'AM_PATTERN_1', description: 'Select if am-pattern-1 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_2', description: 'Select if am-pattern-2 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_3', description: 'Select if am-pattern-3 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'AM_PATTERN_4', description: 'Select if am-pattern-4 chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'SINGLE_NODE', description: 'Select if am-single-node chart needs to be pushed', defaultValue: false)
         booleanParam(name: 'MYSQL_AM', description: 'Select if mysql-am chart needs to be pushed', defaultValue: false)
-        separator('Select Helm parameters')
+        separator('Select Helm parameters', name: 'parameters')
         booleanParam(name: 'FORCE_PUSH', description: 'Select if charts need to be replaced', defaultValue: false)
     }
 
