@@ -47,6 +47,8 @@ spec:
 {{- include "image" (dict "Values" .Values "deployment" .Values.wso2.deployment.am) | indent 8 }}
         imagePullPolicy: {{ .Values.wso2.deployment.am.imagePullPolicy }}
         env:
+        - name: WSO2_UPDATES_UPDATE_LEVEL_STATE
+          value: {{ .Values.wso2.subscription.updateLevelState }}
         - name: PROFILE_NAME
           value: gateway-worker
         - name: NODE_IP
@@ -88,7 +90,8 @@ spec:
             memory: {{ .Values.wso2.deployment.am.resources.limits.memory }}
             cpu: {{ .Values.wso2.deployment.am.resources.limits.cpu }}
         securityContext:
-          runAsUser: 802
+          runAsUser: 10001
+          runAsGroup: 10001
         ports:
         - containerPort: 8280
           protocol: TCP
@@ -99,6 +102,9 @@ spec:
         - containerPort: 9443
           protocol: TCP
         volumeMounts:
+        - name: wso2am-conf-entrypoint
+          mountPath: /home/wso2carbon/docker-entrypoint.sh
+          subPath: docker-entrypoint.sh
         - name: wso2am-gateway-conf
           mountPath: /home/wso2carbon/wso2-config-volume/repository/conf
       serviceAccountName: {{ .Values.kubernetes.serviceAccount }}
@@ -110,6 +116,10 @@ spec:
         - name: {{ template "am-pattern-4.resource.prefix" . }}-wso2-private-registry-creds
       {{ end }}
       volumes:
+      - name: wso2am-conf-entrypoint
+        configMap:
+          name: {{ template "am-pattern-4.resource.prefix" . }}-am-gateway-entrypoint
+          defaultMode: 0777
       - name: wso2am-gateway-conf
         configMap:
           name: {{ template "am-pattern-4.resource.prefix" . }}-am-gateway-conf

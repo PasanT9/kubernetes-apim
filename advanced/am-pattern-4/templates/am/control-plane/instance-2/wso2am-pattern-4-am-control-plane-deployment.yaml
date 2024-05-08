@@ -35,6 +35,9 @@ spec:
         product: apim
     spec:
       initContainers:
+        - name: init-cp-1
+          image: busybox:1.32
+          command: ['sh', '-c', 'echo -e "Checking for the availability of control plane instance one deployment"; while ! nc -z {{ template "am-pattern-4.resource.prefix" . }}-am-cp-1-service 9443; do sleep 1; printf "-"; done; echo -e"  >> API Manager Control Plane instance one has started";']
         - name: init-db
           image: busybox:1.32
           command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.wso2.deployment.am.cp.db.hostname }}" {{ .Values.wso2.deployment.am.cp.db.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
@@ -86,7 +89,8 @@ spec:
               memory: {{ .Values.wso2.deployment.am.cp.resources.limits.memory }}
               cpu: {{ .Values.wso2.deployment.am.cp.resources.limits.cpu }}
           securityContext:
-            runAsUser: 802
+            runAsUser: 10001
+            runAsGroup: 10001
           ports:
             - containerPort: 9763
               protocol: "TCP"
@@ -99,6 +103,8 @@ spec:
             - containerPort: 5672
               protocol: "TCP"
           env:
+            - name: WSO2_UPDATES_UPDATE_LEVEL_STATE
+              value: {{ .Values.wso2.subscription.updateLevelState }}
             - name: PROFILE_NAME
               value: control-plane
             - name: NODE_IP
@@ -108,6 +114,9 @@ spec:
             - name: JVM_MEM_OPTS
               value: "-Xms{{ .Values.wso2.deployment.am.cp.resources.jvm.heap.memory.xms }} -Xmx{{ .Values.wso2.deployment.am.cp.resources.jvm.heap.memory.xmx }}"
           volumeMounts:
+            - name: wso2am-conf-entrypoint
+              mountPath: /home/wso2carbon/docker-entrypoint.sh
+              subPath: docker-entrypoint.sh
             - name: wso2am-conf
               mountPath: /home/wso2carbon/wso2-config-volume/repository/conf
             {{ if .Values.wso2.deployment.persistentRuntimeArtifacts.apacheSolrIndexing.enabled }}
@@ -130,6 +139,10 @@ spec:
         - name: {{ template "am-pattern-4.resource.prefix" . }}-wso2-private-registry-creds
       {{ end }}
       volumes:
+        - name: wso2am-conf-entrypoint
+          configMap:
+            name: {{ template "am-pattern-4.resource.prefix" . }}-am-cp-entrypoint
+            defaultMode: 0777
         - name: wso2am-conf
           configMap:
             name: {{ template "am-pattern-4.resource.prefix" . }}-am-cp-2-conf
@@ -143,7 +156,7 @@ spec:
         - name: wso2am-conf-entrypoint
           configMap:
             name: {{ template "am-pattern-4.resource.prefix" . }}-am-cp-conf-entrypoint
-            defaultMode: 0407
+            defaultMode: 0777
         {{ end }}
         - name: db-connector-jar
           emptyDir: {}

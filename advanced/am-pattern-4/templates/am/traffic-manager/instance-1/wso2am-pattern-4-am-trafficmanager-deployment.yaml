@@ -66,7 +66,8 @@ spec:
               memory: {{ .Values.wso2.deployment.am.trafficmanager.resources.limits.memory }}
               cpu: {{ .Values.wso2.deployment.am.trafficmanager.resources.limits.cpu }}
           securityContext:
-            runAsUser: 802
+            runAsUser: 10001
+            runAsGroup: 10001
           ports:
             - containerPort: 9763
               protocol: "TCP"
@@ -79,6 +80,8 @@ spec:
             - containerPort: 5672
               protocol: "TCP"
           env:
+            - name: WSO2_UPDATES_UPDATE_LEVEL_STATE
+              value: {{ .Values.wso2.subscription.updateLevelState }}
             - name: PROFILE_NAME
               value: traffic-manager
             - name: NODE_IP
@@ -88,6 +91,9 @@ spec:
             - name: JVM_MEM_OPTS
               value: "-Xms{{ .Values.wso2.deployment.am.trafficmanager.resources.jvm.heap.memory.xms }} -Xmx{{ .Values.wso2.deployment.am.trafficmanager.resources.jvm.heap.memory.xmx }}"
           volumeMounts:
+            - name: wso2am-conf-entrypoint-tm
+              mountPath: /home/wso2carbon/docker-entrypoint.sh
+              subPath: docker-entrypoint.sh
             - name: wso2am-conf
               mountPath: /home/wso2carbon/wso2-config-volume/repository/conf
       serviceAccountName: {{ .Values.kubernetes.serviceAccount }}
@@ -99,13 +105,17 @@ spec:
         - name: {{ template "am-pattern-4.resource.prefix" . }}-wso2-private-registry-creds
       {{ end }}
       volumes:
+        - name: wso2am-conf-entrypoint-tm
+          configMap:
+            name: {{ template "am-pattern-4.resource.prefix" . }}-am-trafficmanager-entrypoint
+            defaultMode: 0777
         - name: wso2am-conf
           configMap:
             name: {{ template "am-pattern-4.resource.prefix" . }}-am-trafficmanager-1-conf
         - name: wso2am-conf-entrypoint
           configMap:
             name: {{ template "am-pattern-4.resource.prefix" . }}-am-trafficmanager-conf-entrypoint
-            defaultMode: 0407
+            defaultMode: 0777
         {{ if .Values.wso2.deployment.dependencies.mysql }}
         - name: mysql-connector-jar
           emptyDir: {}

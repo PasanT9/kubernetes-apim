@@ -37,6 +37,9 @@ data:
     [user_store]
     type = "database_unique_id"
 
+    [oauth.endpoints]
+    oauth2_jwks_url="https://{{ template "am-pattern-4.resource.prefix" . }}-am-cp-service:${mgt.transport.https.port}/oauth2/jwks"
+
     [super_admin]
     username = "admin"
     password = "admin"
