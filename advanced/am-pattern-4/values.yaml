@@ -288,7 +288,7 @@ wso2:
       # If a custom image must be used, uncomment 'dockerRegistry' and provide its value.
       dockerRegistry: "docker.wso2.com"
       imageName: "wso2mi"
-      imageTag: "4.2.0.0"
+      imageTag: "4.4.0.0"
       # Number of deployment replicas
       replicas: 2
       strategy:
